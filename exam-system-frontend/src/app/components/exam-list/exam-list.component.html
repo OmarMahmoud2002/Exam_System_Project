@@ -1,0 +1,126 @@
+<div class="exam-list-container">
+  <div class="exam-list-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h2>
+          <i class="bi bi-kanban me-3"></i>
+          {{ isAdmin ? 'Manage Exams' : 'Available Exams' }}
+        </h2>
+        <p *ngIf="!isAdmin" class="subtitle">Select an exam to begin your assessment</p>
+        <p *ngIf="isAdmin" class="subtitle">Create, edit, and manage your examination system</p>
+      </div>
+      <div class="actions">
+        <button *ngIf="isAdmin" class="btn btn-primary create-exam-btn" (click)="createExam()">
+          <i class="bi bi-plus-circle me-2"></i>
+          Create New Exam
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && exams.length === 0" class="no-exams">
+    <p>No exams are currently available.</p>
+    <button *ngIf="isAdmin" class="btn btn-outline-primary" (click)="createExam()">
+      Create your first exam
+    </button>
+  </div>
+
+  <div *ngIf="!loading && !error && exams.length > 0" class="exam-grid">
+    <div *ngFor="let exam of exams" class="exam-card" [class.admin-card]="isAdmin">
+      <div class="exam-card-header">
+        <div class="title-section">
+          <h3 class="exam-title">{{ exam.title }}</h3>
+          <span class="exam-status" [class.active]="exam.isActive" [class.inactive]="!exam.isActive">
+            <i class="bi" [class.bi-check-circle-fill]="exam.isActive" [class.bi-pause-circle-fill]="!exam.isActive"></i>
+            {{ exam.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="exam-duration">
+          <i class="bi bi-clock me-1"></i>
+          {{ formatDuration(exam.duration) }}
+        </div>
+      </div>
+
+      <div class="exam-card-body">
+        <p class="exam-description">{{ exam.description }}</p>
+        <div class="exam-stats">
+          <div class="stat-item">
+            <div class="stat-icon">
+              <i class="bi bi-award"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Total Marks</span>
+              <span class="stat-value">{{ exam.totalMarks }}</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon">
+              <i class="bi bi-percent"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Pass Rate</span>
+              <span class="stat-value">{{ exam.passingPercentage }}%</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon">
+              <i class="bi bi-calendar3"></i>
+            </div>
+            <div class="stat-content">
+              <span class="stat-label">Created</span>
+              <span class="stat-value">{{ formatDate(exam.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="exam-card-footer">
+        <div class="exam-actions" *ngIf="isAdmin">
+          <button class="btn btn-action btn-edit" (click)="startExam(exam._id); $event.stopPropagation()" title="Edit Exam">
+            <i class="bi bi-pencil-square me-1"></i>
+            Edit
+          </button>
+          <button class="btn btn-action btn-questions" (click)="manageQuestions(exam._id); $event.stopPropagation()" title="Manage Questions">
+            <i class="bi bi-question-circle me-1"></i>
+            Questions
+          </button>
+          <button class="btn btn-action btn-delete" (click)="deleteExam(exam._id, $event)" title="Delete Exam">
+            <i class="bi bi-trash me-1"></i>
+            Delete
+          </button>
+        </div>
+        <button *ngIf="!isAdmin" class="btn btn-primary start-exam-btn" (click)="startExam(exam._id)">
+          <i class="bi bi-play-circle me-2"></i>
+          Start Exam
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="pagination">
+    <button 
+      class="btn btn-sm btn-outline-primary" 
+      [disabled]="currentPage === 1"
+      (click)="changePage(currentPage - 1)">
+      Previous
+    </button>
+    <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+    <button 
+      class="btn btn-sm btn-outline-primary" 
+      [disabled]="currentPage === totalPages"
+      (click)="changePage(currentPage + 1)">
+      Next
+    </button>
+  </div>
+</div>
