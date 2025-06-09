@@ -1,0 +1,67 @@
+<div class="auth-container">
+  <div class="auth-card fade-in">
+    <div class="auth-header">
+      <h2>Welcome Back</h2>
+      <p class="mb-0">Sign in to continue to Exam System</p>
+    </div>
+    
+    <div class="p-4">
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="form-group mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-control"
+              [ngClass]="{ 'is-invalid': f['email'].touched && f['email'].errors }"
+              placeholder="Enter your email"
+            />
+          </div>
+          <div *ngIf="f['email'].touched && f['email'].errors" class="invalid-feedback d-block">
+            <div *ngIf="f['email'].errors['required']"><i class="bi bi-exclamation-circle"></i> Email is required</div>
+            <div *ngIf="f['email'].errors['email']"><i class="bi bi-exclamation-circle"></i> Please enter a valid email</div>
+          </div>
+        </div>
+
+      <div class="form-group mb-4">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="form-control"
+            [ngClass]="{ 'is-invalid': f['password'].touched && f['password'].errors }"
+            placeholder="Enter your password"
+          />
+        </div>
+        <div *ngIf="f['password'].touched && f['password'].errors" class="invalid-feedback d-block">
+          <div *ngIf="f['password'].errors['required']"><i class="bi bi-exclamation-circle"></i> Password is required</div>
+          <div *ngIf="f['password'].errors['minlength']"><i class="bi bi-exclamation-circle"></i> Password must be at least 6 characters</div>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2 mt-4">
+        <button type="submit" class="btn btn-primary btn-lg" [disabled]="loading || loginForm.invalid">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loading" class="bi bi-box-arrow-in-right me-2"></i>
+          Sign In
+        </button>
+      </div>
+
+      <div class="text-center mt-4">
+        <span class="text-muted">Don't have an account?</span> 
+        <a routerLink="/register" class="ms-2 fw-bold text-decoration-none">Register Now</a>
+      </div>
+    </form>
+  </div>
+</div>
