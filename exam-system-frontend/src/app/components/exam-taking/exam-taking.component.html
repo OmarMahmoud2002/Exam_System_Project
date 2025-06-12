@@ -1,0 +1,101 @@
+<div class="exam-container">
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && exam && questions.length > 0" class="exam-content">
+    <div class="exam-header">
+      <h2>{{ exam.title }}</h2>
+      <div class="exam-info">
+        <div class="timer" [ngClass]="{'timer-warning': timeRemaining < 300}">
+          Time Remaining: {{ timerDisplay }}
+        </div>
+        <div class="progress">
+          <div class="progress-bar" 
+               [style.width.%]="(currentQuestionIndex + 1) / questions.length * 100">
+            {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exam-body">
+      <div class="question-sidebar">
+        <div class="question-navigator">
+          <h4>Questions</h4>
+          <div class="question-list">
+            <button *ngFor="let q of questions; let i = index" 
+                    class="question-button" 
+                    [ngClass]="{
+                      'current': i === currentQuestionIndex,
+                      'answered': getQuestionStatus(i) === 'answered',
+                      'unanswered': getQuestionStatus(i) === 'unanswered'
+                    }"
+                    (click)="goToQuestion(i)">
+              {{ i + 1 }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="question-content">
+        <div class="question-container" *ngIf="questions.length > 0">
+          <div class="question-header">
+            <h4>Question {{ currentQuestionIndex + 1 }}</h4>
+            <span class="question-marks">{{ questions[currentQuestionIndex].marks }} marks</span>
+          </div>
+          
+          <div class="question-text">
+            {{ questions[currentQuestionIndex].text }}
+          </div>
+
+          <div class="options-container">
+            <div *ngFor="let option of questions[currentQuestionIndex].options; let i = index" 
+                 class="option" 
+                 [ngClass]="{'selected': isSelected(questions[currentQuestionIndex]._id, i)}"
+                 (click)="selectAnswer(questions[currentQuestionIndex]._id, i)">
+              <div class="option-selector">
+                <span class="option-indicator">{{ ['A', 'B', 'C', 'D', 'E', 'F'][i] }}</span>
+              </div>
+              <div class="option-text">
+                {{ option }}
+              </div>
+            </div>
+          </div>
+
+          <div class="question-navigation">
+            <button 
+              class="btn btn-outline-secondary" 
+              [disabled]="currentQuestionIndex === 0"
+              (click)="previousQuestion()">
+              Previous
+            </button>
+            <button 
+              class="btn btn-outline-primary" 
+              *ngIf="currentQuestionIndex < questions.length - 1"
+              (click)="nextQuestion()">
+              Next
+            </button>
+            <button 
+              class="btn btn-success" 
+              *ngIf="currentQuestionIndex === questions.length - 1"
+              (click)="finishExam()">
+              Finish Exam
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !error && (!exam || questions.length === 0)" class="no-exam">
+    <p>This exam is not available or has no questions.</p>
+    <button class="btn btn-primary" routerLink="/dashboard/exams">Back to Exam List</button>
+  </div>
+</div>
