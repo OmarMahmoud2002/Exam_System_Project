@@ -1,0 +1,205 @@
+<div class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="bi bi-journals me-2"></i>
+            Available Exams
+          </h4>
+        </div>
+        <div class="card-body">
+          <!-- Loading State -->
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading exams...</p>
+          </div>
+
+          <!-- Error State -->
+          <div *ngIf="error && !loading" class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ error }}
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!loading && !error && exams.length === 0" class="text-center py-5">
+            <i class="bi bi-journal-x display-1 text-muted"></i>
+            <h5 class="mt-3 text-muted">No Active Exams Available</h5>
+            <p class="text-muted">There are currently no active exams available for you to take.</p>
+          </div>
+
+          <!-- Exams Grid -->
+          <div *ngIf="!loading && !error && exams.length > 0" class="row g-4">
+            <div *ngFor="let exam of exams" class="col-lg-6 col-xl-4">
+              <div class="card h-100 exam-card"
+                   [class.exam-completed]="hasAlreadyTaken(exam._id)"
+                   [class.exam-available]="!hasAlreadyTaken(exam._id) && exam.isActive"
+                   [class.exam-inactive]="!exam.isActive">
+                <div class="card-body d-flex flex-column">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title text-truncate" [title]="exam.title">
+                      {{ exam.title }}
+                    </h5>
+                    <span *ngIf="hasAlreadyTaken(exam._id)"
+                          class="badge bg-success">
+                      <i class="bi bi-check-circle me-1"></i>
+                      Completed
+                    </span>
+                    <span *ngIf="!hasAlreadyTaken(exam._id) && exam.isActive"
+                          class="badge bg-primary">
+                      <i class="bi bi-play-circle me-1"></i>
+                      Available
+                    </span>
+                    <span *ngIf="!exam.isActive"
+                          class="badge bg-secondary">
+                      <i class="bi bi-pause-circle me-1"></i>
+                      Inactive
+                    </span>
+                  </div>
+
+                  <p class="card-text text-muted mb-3">{{ exam.description }}</p>
+
+                  <div class="exam-details mb-3">
+                    <div class="row g-2 text-sm">
+                      <div class="col-6">
+                        <i class="bi bi-clock text-primary me-1"></i>
+                        <strong>Duration:</strong>
+                        <br>
+                        <span class="text-muted">{{ formatDuration(exam.duration) }}</span>
+                      </div>
+                      <div class="col-6">
+                        <i class="bi bi-award text-warning me-1"></i>
+                        <strong>Total Marks:</strong>
+                        <br>
+                        <span class="text-muted">{{ exam.totalMarks }}</span>
+                      </div>
+                      <div class="col-6">
+                        <i class="bi bi-percent text-success me-1"></i>
+                        <strong>Passing:</strong>
+                        <br>
+                        <span class="text-muted">{{ exam.passingPercentage }}%</span>
+                      </div>
+                      <div class="col-6">
+                        <i class="bi bi-calendar text-info me-1"></i>
+                        <strong>Created:</strong>
+                        <br>
+                        <span class="text-muted">{{ formatDate(exam.createdAt) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Result Summary for completed exams -->
+                  <div *ngIf="hasAlreadyTaken(exam._id)" class="result-summary mb-3 p-3 bg-light rounded">
+                    <h6 class="mb-2">Your Result:</h6>
+                    <div class="row g-2">
+                      <div class="col-6">
+                        <strong>Score:</strong> {{ getExamResult(exam._id).score }}/{{ getExamResult(exam._id).totalMarks }}
+                      </div>
+                      <div class="col-6">
+                        <strong>Percentage:</strong> {{ getExamResult(exam._id).percentage }}%
+                      </div>
+                      <div class="col-12">
+                        <span class="badge" 
+                              [class.bg-success]="getExamResult(exam._id).passed"
+                              [class.bg-danger]="!getExamResult(exam._id).passed">
+                          {{ getExamResult(exam._id).passed ? 'PASSED' : 'FAILED' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-auto">
+                    <button *ngIf="!hasAlreadyTaken(exam._id) && exam.isActive"
+                            class="btn btn-primary w-100"
+                            (click)="showExamConfirmation(exam)">
+                      <i class="bi bi-play-circle me-2"></i>
+                      Start Exam
+                    </button>
+                    <button *ngIf="!hasAlreadyTaken(exam._id) && !exam.isActive"
+                            class="btn btn-secondary w-100"
+                            disabled>
+                      <i class="bi bi-pause-circle me-2"></i>
+                      Exam Not Active
+                    </button>
+                    <button *ngIf="hasAlreadyTaken(exam._id)"
+                            class="btn btn-outline-primary w-100"
+                            (click)="viewResult(exam._id)">
+                      <i class="bi bi-eye me-2"></i>
+                      View Result
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <nav *ngIf="totalPages > 1" aria-label="Exam pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" (click)="changePage(currentPage - 1)" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <li *ngFor="let page of [].constructor(totalPages); let i = index" 
+                  class="page-item" [class.active]="currentPage === i + 1">
+                <a class="page-link" (click)="changePage(i + 1)">{{ i + 1 }}</a>
+              </li>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" (click)="changePage(currentPage + 1)" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" [class.show]="showConfirmModal" [style.display]="showConfirmModal ? 'block' : 'none'" 
+     tabindex="-1" role="dialog" aria-labelledby="examConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title" id="examConfirmModalLabel">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Confirm Exam Start
+        </h5>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="selectedExam" class="text-center">
+          <h6 class="mb-3">{{ selectedExam.title }}</h6>
+          <div class="alert alert-info">
+            <h6 class="alert-heading">Important Instructions:</h6>
+            <ul class="mb-0 text-start">
+              <li>You have <strong>{{ formatDuration(selectedExam.duration) }}</strong> to complete this exam</li>
+              <li>You can only take this exam <strong>once</strong></li>
+              <li>Make sure you have a stable internet connection</li>
+              <li>Do not refresh or close the browser during the exam</li>
+              <li>Your answers will be automatically saved</li>
+            </ul>
+          </div>
+          <p class="text-muted">Are you ready to start the exam?</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelStartExam()">
+          <i class="bi bi-x-circle me-2"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="confirmStartExam()">
+          <i class="bi bi-play-circle me-2"></i>
+          Start Exam
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div *ngIf="showConfirmModal" class="modal-backdrop fade show"></div>
