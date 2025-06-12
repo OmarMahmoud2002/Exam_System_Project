@@ -1,0 +1,256 @@
+<div class="manage-exam-container">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h2>
+          <i class="bi" [class.bi-pencil-square]="isEditMode" [class.bi-plus-circle]="!isEditMode"></i>
+          {{ isEditMode ? 'Edit Exam' : 'Create New Exam' }}
+        </h2>
+        <p class="subtitle">
+          {{ isEditMode ? 'Modify exam details and settings' : 'Set up a new examination for your students' }}
+        </p>
+      </div>
+      <div class="breadcrumb-nav">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <a routerLink="/admin/exams">
+                <i class="bi bi-house-door me-1"></i>
+                Exams
+              </a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+              {{ isEditMode ? 'Edit' : 'Create' }}
+            </li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-card">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="loading-text">{{ isEditMode ? 'Loading exam details...' : 'Preparing form...' }}</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="alert alert-danger alert-modern">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ error }}
+  </div>
+  
+  <form [formGroup]="examForm" (ngSubmit)="onSubmit()" class="exam-form" *ngIf="!loading">
+    <div class="form-card">
+      <div class="card-header">
+        <h4>
+          <i class="bi bi-info-circle me-2"></i>
+          Basic Information
+        </h4>
+        <p>Enter the fundamental details for your exam</p>
+      </div>
+
+      <div class="card-body">
+        <div class="form-group">
+          <label for="title" class="form-label">
+            <i class="bi bi-card-text me-2"></i>
+            Exam Title*
+          </label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            class="form-control modern-input"
+            placeholder="Enter a descriptive title for your exam"
+            [ngClass]="{ 'is-invalid': submitted && f['title'].errors }"
+          />
+          <div *ngIf="submitted && f['title'].errors" class="invalid-feedback">
+            <div *ngIf="f['title'].errors['required']">
+              <i class="bi bi-exclamation-circle me-1"></i>
+              Title is required
+            </div>
+            <div *ngIf="f['title'].errors['maxlength']">
+              <i class="bi bi-exclamation-circle me-1"></i>
+              Title cannot exceed 100 characters
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description" class="form-label">
+            <i class="bi bi-file-text me-2"></i>
+            Description*
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="form-control modern-input"
+            rows="4"
+            placeholder="Provide a detailed description of the exam content and objectives"
+            [ngClass]="{ 'is-invalid': submitted && f['description'].errors }"
+          ></textarea>
+          <div *ngIf="submitted && f['description'].errors" class="invalid-feedback">
+            <div *ngIf="f['description'].errors['required']">
+              <i class="bi bi-exclamation-circle me-1"></i>
+              Description is required
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-card">
+      <div class="card-header">
+        <h4>
+          <i class="bi bi-gear me-2"></i>
+          Exam Configuration
+        </h4>
+        <p>Set the timing, scoring, and performance criteria</p>
+      </div>
+
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="duration" class="form-label">
+                <i class="bi bi-clock me-2"></i>
+                Duration (minutes)*
+              </label>
+              <input
+                type="number"
+                id="duration"
+                formControlName="duration"
+                class="form-control modern-input"
+                placeholder="e.g., 60"
+                [ngClass]="{ 'is-invalid': submitted && f['duration'].errors }"
+              />
+              <small class="form-text">Recommended: 60-120 minutes</small>
+              <div *ngIf="submitted && f['duration'].errors" class="invalid-feedback">
+                <div *ngIf="f['duration'].errors['required']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Duration is required
+                </div>
+                <div *ngIf="f['duration'].errors['min']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Duration must be at least 5 minutes
+                </div>
+                <div *ngIf="f['duration'].errors['max']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Duration cannot exceed 240 minutes
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="totalMarks" class="form-label">
+                <i class="bi bi-award me-2"></i>
+                Total Marks*
+              </label>
+              <input
+                type="number"
+                id="totalMarks"
+                formControlName="totalMarks"
+                class="form-control modern-input"
+                placeholder="e.g., 100"
+                [ngClass]="{ 'is-invalid': submitted && f['totalMarks'].errors }"
+              />
+              <small class="form-text">Maximum possible score</small>
+              <div *ngIf="submitted && f['totalMarks'].errors" class="invalid-feedback">
+                <div *ngIf="f['totalMarks'].errors['required']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Total marks is required
+                </div>
+                <div *ngIf="f['totalMarks'].errors['min']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Total marks must be at least 1
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-group">
+              <label for="passingPercentage" class="form-label">
+                <i class="bi bi-percent me-2"></i>
+                Passing Percentage*
+              </label>
+              <input
+                type="number"
+                id="passingPercentage"
+                formControlName="passingPercentage"
+                class="form-control modern-input"
+                placeholder="e.g., 60"
+                [ngClass]="{ 'is-invalid': submitted && f['passingPercentage'].errors }"
+              />
+              <small class="form-text">Minimum score to pass</small>
+              <div *ngIf="submitted && f['passingPercentage'].errors" class="invalid-feedback">
+                <div *ngIf="f['passingPercentage'].errors['required']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Passing percentage is required
+                </div>
+                <div *ngIf="f['passingPercentage'].errors['min']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Percentage must be at least 0
+                </div>
+                <div *ngIf="f['passingPercentage'].errors['max']">
+                  <i class="bi bi-exclamation-circle me-1"></i>
+                  Percentage cannot exceed 100
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-card">
+      <div class="card-header">
+        <h4>
+          <i class="bi bi-toggles me-2"></i>
+          Exam Status
+        </h4>
+        <p>Control exam visibility and availability</p>
+      </div>
+
+      <div class="card-body">
+        <div class="form-check-modern">
+          <input
+            type="checkbox"
+            id="isActive"
+            formControlName="isActive"
+            class="form-check-input modern-checkbox"
+          />
+          <label for="isActive" class="form-check-label">
+            <div class="check-content">
+              <div class="check-title">
+                <i class="bi bi-eye me-2"></i>
+                Active Exam
+              </div>
+              <div class="check-description">
+                When enabled, students can see and take this exam
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary btn-modern" routerLink="/admin/exams">
+        <i class="bi bi-x-circle me-2"></i>
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-primary btn-modern" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!loading" class="bi me-2" [class.bi-pencil-square]="isEditMode" [class.bi-plus-circle]="!isEditMode"></i>
+        {{ isEditMode ? 'Update Exam' : 'Create Exam' }}
+      </button>
+    </div>
+  </form>
+</div>
