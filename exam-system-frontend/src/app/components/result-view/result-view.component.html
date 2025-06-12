@@ -1,0 +1,125 @@
+<div class="container mt-4">
+  <!-- Results List View -->
+  <div *ngIf="!selectedResult">
+    <h2>My Exam Results</h2>
+    
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    
+    <div *ngIf="isLoading" class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    
+    <div *ngIf="!isLoading && results.length === 0" class="alert alert-info">
+      You haven't taken any exams yet.
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" *ngIf="!isLoading && results.length > 0">
+      <div class="col" *ngFor="let result of results">
+        <div class="card h-100" [ngClass]="{'border-success': result.passed, 'border-danger': !result.passed}">
+          <div class="card-body">
+            <h5 class="card-title">{{ result.exam?.title || 'Exam' }}</h5>
+            <div class="mb-3">
+              <div class="progress">
+                <div class="progress-bar" 
+                     [ngClass]="calculateProgressBarClass(result.percentage)"
+                     role="progressbar" 
+                     [style.width.%]="result.percentage" 
+                     [attr.aria-valuenow]="result.percentage" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                  {{ result.percentage }}%
+                </div>
+              </div>
+            </div>
+            <p class="card-text">Score: {{ result.score }} / {{ result.totalMarks }}</p>
+            <p class="card-text">
+              <span class="badge" [ngClass]="result.passed ? 'bg-success' : 'bg-danger'">
+                {{ result.passed ? 'Passed' : 'Failed' }}
+              </span>
+            </p>
+            <p class="card-text"><small class="text-muted">Date: {{ result.createdAt | date:'medium' }}</small></p>
+          </div>
+          <div class="card-footer bg-transparent">
+            <button class="btn btn-sm btn-primary" (click)="viewResult(result)">View Details</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Single Result Detail View -->
+  <div *ngIf="selectedResult" class="result-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Exam Result: {{ selectedResult.exam?.title || 'Exam' }}</h2>
+      <button class="btn btn-secondary" (click)="backToList()">Back to Results</button>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>Result Summary</h4>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="summary-item">
+              <strong>Total Score:</strong> {{ selectedResult.score }} / {{ selectedResult.totalMarks }}
+            </div>
+            <div class="summary-item">
+              <strong>Percentage:</strong> {{ selectedResult.percentage }}%
+            </div>
+            <div class="summary-item">
+              <strong>Status:</strong> 
+              <span class="badge" [ngClass]="selectedResult.passed ? 'bg-success' : 'bg-danger'">
+                {{ selectedResult.passed ? 'Passed' : 'Failed' }}
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="progress" style="height: 30px;">
+              <div class="progress-bar" 
+                   [ngClass]="calculateProgressBarClass(selectedResult.percentage)"
+                   role="progressbar" 
+                   [style.width.%]="selectedResult.percentage" 
+                   [attr.aria-valuenow]="selectedResult.percentage" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                {{ selectedResult.percentage }}%
+              </div>
+            </div>
+            <p class="text-center mt-2"><small>Exam taken on: {{ selectedResult.createdAt | date:'medium' }}</small></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Answers List -->
+    <div class="card">
+      <div class="card-header">
+        <h4>Question Answers</h4>
+      </div>
+      <div class="card-body">
+        <div class="list-group">
+          <div *ngFor="let answer of selectedResult.answers; let i = index" 
+               class="list-group-item" 
+               [ngClass]="{'list-group-item-success': answer.isCorrect, 'list-group-item-danger': !answer.isCorrect}">
+            <h5 class="mb-2">Question {{ i + 1 }}</h5>
+            <div class="mb-2">
+              <strong>Question:</strong> Question {{ i + 1 }}
+            </div>
+            <div class="mb-2">
+              <strong>Selected Option:</strong> {{ answer.selectedOption + 1 }}
+              <span *ngIf="answer.isCorrect" class="ms-2 text-success">
+                <i class="bi bi-check-circle-fill"></i> Correct
+              </span>
+              <span *ngIf="!answer.isCorrect" class="ms-2 text-danger">
+                <i class="bi bi-x-circle-fill"></i> Incorrect
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
