@@ -1,0 +1,36 @@
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.progress {
+  height: 20px;
+}
+
+.card-title {
+  font-weight: 500;
+}
+
+.modal-backdrop {
+  opacity: 0.5;
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.btn-group .btn {
+  margin-right: 5px;
+}
+
+.btn-group .btn:last-child {
+  margin-right: 0;
+}
+
+.display-6 {
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+.card .card-body .display-6 {
+  margin-bottom: 0;
+}
