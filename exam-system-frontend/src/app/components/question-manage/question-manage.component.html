@@ -1,0 +1,136 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Questions for: {{ examTitle }}</h2>
+    <button class="btn btn-secondary" (click)="goBack()">Back to Exams</button>
+  </div>
+
+  <div *ngIf="message" class="alert alert-success">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Question Form -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4>{{ editIndex >= 0 ? 'Edit Question' : 'Add New Question' }}</h4>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="questionForm" (ngSubmit)="editIndex >= 0 ? updateQuestion() : addQuestion()">
+        <div class="mb-3">
+          <label for="questionText" class="form-label">Question Text:</label>
+          <textarea 
+            id="questionText" 
+            class="form-control" 
+            formControlName="text" 
+            rows="3"
+          ></textarea>
+          <div *ngIf="questionForm.get('text')?.invalid && questionForm.get('text')?.touched" class="text-danger">
+            Question text is required (minimum 5 characters)
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Options:</label>
+          <div formArrayName="options">
+            <div *ngFor="let option of options.controls; let i = index" class="mb-2 input-group">
+              <span class="input-group-text">
+                <input
+                  type="radio"
+                  [value]="i"
+                  [checked]="questionForm.get('correctAnswer')?.value === i"
+                  (change)="setCorrectAnswer(i)"
+                  name="correctAnswer_{{editIndex}}"
+                  style="margin-right: 5px;"
+                >
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                [formControlName]="i"
+                placeholder="Option {{i + 1}}"
+              >
+              <div *ngIf="option.invalid && option.touched" class="w-100">
+                <small class="text-danger">Option text is required</small>
+              </div>
+            </div>
+          </div>
+          <small class="text-muted">Select the radio button next to the correct answer.</small>
+        </div>
+
+        <div class="mb-3">
+          <label for="marks" class="form-label">Marks:</label>
+          <input 
+            type="number" 
+            id="marks" 
+            class="form-control" 
+            formControlName="marks" 
+            min="1"
+            style="max-width: 100px;"
+          >
+          <div *ngIf="questionForm.get('marks')?.invalid && questionForm.get('marks')?.touched" class="text-danger">
+            Marks must be at least 1
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button 
+            type="submit" 
+            class="btn btn-primary" 
+            [disabled]="questionForm.invalid || isLoading"
+          >
+            {{ isLoading ? 'Processing...' : (editIndex >= 0 ? 'Update Question' : 'Add Question') }}
+          </button>
+          
+          <button 
+            *ngIf="editIndex >= 0"
+            type="button" 
+            class="btn btn-outline-secondary" 
+            (click)="cancelEdit()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Questions List -->
+  <div class="card">
+    <div class="card-header">
+      <h4>Questions ({{ questions.length }})</h4>
+    </div>
+    <div class="card-body">
+      <div *ngIf="isLoading && !questions.length" class="text-center py-3">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      
+      <div *ngIf="!isLoading && !questions.length" class="text-center py-3">
+        <p class="text-muted">No questions added to this exam yet.</p>
+      </div>
+      
+      <div class="list-group">
+        <div *ngFor="let question of questions; let i = index" class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <h5 class="mb-1">Q{{i+1}}: {{ question.text }}</h5>
+              <small class="text-muted">{{ question.marks }} mark{{ question.marks > 1 ? 's' : '' }}</small>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" (click)="editQuestion(question, i)">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteQuestion(question._id, i)">Delete</button>
+            </div>
+          </div>
+          
+          <ol class="list-group list-group-numbered">
+            <li *ngFor="let option of question.options; let j = index" 
+                class="list-group-item" 
+                [class.list-group-item-success]="j === question.correctAnswer">
+              {{ option }}
+              <span *ngIf="j === question.correctAnswer" class="badge bg-success float-end">Correct</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
